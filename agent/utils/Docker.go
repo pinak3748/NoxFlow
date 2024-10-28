@@ -23,7 +23,11 @@ func DockerListContainers(ctx context.Context) ([]types.Container, error) {
 	return DockerClient.ContainerList(ctx, options)
 }
 
-func DockerInspect(ctx context.Context, containerID string) (types.ContainerJSON, error) {
+func ContainerInspect(ctx context.Context, containerID string) (types.ContainerJSON, error) {
 	return DockerClient.ContainerInspect(ctx, containerID)
+}
+
+func ContainerStats(ctx context.Context, containerID string, stream bool) (container.StatsResponseReader, error) {
+	return DockerClient.ContainerStats(ctx, containerID, stream)
 
 }

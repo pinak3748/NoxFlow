@@ -1,3 +1,1 @@
-
-
-Messaging : https://nsq.io/overview/design.html
+# Coming Soon
