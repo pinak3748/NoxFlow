@@ -1,4 +1,4 @@
-module github.com/noxflow-agent
+module github.com/nox/noxflow/agent
 
 go 1.23.2
 

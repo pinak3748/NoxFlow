@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	pb "github.com/noxflow-agent/pkg/proto"
+	pb "github.com/nox/noxflow/agent/pkg/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

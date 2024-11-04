@@ -4,16 +4,21 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strings"
+	"time"
 
+	"github.com/nox/noxflow/server-gRPC/utils"
 	"google.golang.org/grpc"
 )
 
 type LogStreamingServer struct {
 	UnimplementedLogStreamingServiceServer
+	dbClient *utils.DatabaseClient
 }
 
 type UsageStreamingServer struct {
 	UnimplementedUsageStreamingServiceServer
+	dbClient *utils.DatabaseClient
 }
 
 // StreamLogs implements the bidirectional streaming RPC for logs
@@ -29,6 +34,18 @@ func (s *LogStreamingServer) StreamLogs(stream LogStreamingService_StreamLogsSer
 		log.Printf("Received log from container %s: %s",
 			logData.Metadata.ContainerName,
 			logData.Log)
+
+		cleanedLog := strings.Replace(logData.Log, "\x00", "", -1)
+
+		// Save to database
+		err = s.dbClient.AddLog(&utils.LogData{
+			Timestamp:     time.Now(),
+			ContainerName: logData.Metadata.ContainerName,
+			LogMessage:    cleanedLog,
+		})
+		if err != nil {
+			log.Printf("Error saving log to database: %v", err)
+		}
 
 		// Send response back to client
 		if err := stream.Send(&LogResponse{
@@ -54,6 +71,17 @@ func (s *UsageStreamingServer) StreamUsage(stream UsageStreamingService_StreamUs
 			usageStats.CpuPercent,
 			usageStats.MemoryPercent)
 
+		// Save to database
+		err = s.dbClient.AddUsage(&utils.UsageData{
+			Timestamp:     time.Now(),
+			ContainerID:   usageStats.ContainerId,
+			CPUPercent:    usageStats.CpuPercent,
+			MemoryPercent: usageStats.MemoryPercent,
+		})
+		if err != nil {
+			log.Printf("Error saving usage stats to database: %v", err)
+		}
+
 		// Send response back to client
 		if err := stream.Send(&UsageResponse{
 			Message: fmt.Sprintf("Received usage stats from container %s", usageStats.ContainerId),
@@ -73,10 +101,23 @@ func StartServer(port int) error {
 	// Create a new gRPC server
 	s := grpc.NewServer()
 
-	// Register our services
-	RegisterLogStreamingServiceServer(s, &LogStreamingServer{})
-	RegisterUsageStreamingServiceServer(s, &UsageStreamingServer{})
+	dbClient, err := utils.NewDatabaseClient(
+		"postgres://postgres:password@localhost:55000/postgres?sslmode=disable",
+		1000,          // batch size
+		5*time.Second, // flush interval
+	)
+	if err != nil {
+		log.Fatalf("Failed to initialize database client: %v", err)
+	}
+	defer dbClient.Close()
 
+	// Register our services with the database client
+	RegisterLogStreamingServiceServer(s, &LogStreamingServer{
+		dbClient: dbClient,
+	})
+	RegisterUsageStreamingServiceServer(s, &UsageStreamingServer{
+		dbClient: dbClient,
+	})
 	log.Printf("Starting gRPC server on port %d", port)
 	if err := s.Serve(lis); err != nil {
 		return fmt.Errorf("failed to serve: %v", err)

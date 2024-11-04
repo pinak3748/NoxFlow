@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/noxflow-server/pkg/server";
+option go_package = "github.com/nox/noxflow/server-gRPC/pkg/server";
 
 package monitoring;
 

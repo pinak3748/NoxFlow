@@ -5,8 +5,8 @@ import (
 	"log"
 	"sync"
 
-	"github.com/noxflow-agent/utils"
-	"github.com/noxflow-agent/worker/docker"
+	"github.com/nox/noxflow/agent/utils"
+	"github.com/nox/noxflow/agent/worker/docker"
 )
 
 func main() {

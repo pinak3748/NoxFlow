@@ -7,8 +7,8 @@ import (
 	"sync"
 
 	"github.com/docker/docker/api/types/container"
-	pb "github.com/noxflow-agent/pkg/proto"
-	"github.com/noxflow-agent/utils"
+	pb "github.com/nox/noxflow/agent/pkg/proto"
+	"github.com/nox/noxflow/agent/utils"
 )
 
 // GetDockerContainerLogs streams logs from a Docker container and sends them to the server

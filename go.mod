@@ -1,4 +1,4 @@
-module github.com/noxflow
+module github.com/nox/noxflow
 
 go 1.23.2
 

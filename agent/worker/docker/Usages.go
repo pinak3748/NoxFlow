@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types/container"
-	"github.com/noxflow-agent/utils"
+	"github.com/nox/noxflow/agent/utils"
 )
 
 type ContainerUsageStats struct {
